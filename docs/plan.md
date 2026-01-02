@@ -42,6 +42,34 @@
 - `.wm.yaml` 스키마 및 샘플
 - 사용 문서(README, 예시)
 
+## `.wm.yaml` 최소 스키마
+```yaml
+version: 1
+
+worktree:
+  base_dir: "../wm_{repo}"
+
+scan:
+  ignore_dirs:
+    - ".git"
+    - "node_modules"
+    - "dist"
+    - "build"
+    - ".next"
+
+sync:
+  - ".env"
+  - "apps/*/.env"
+  - { src: ".env.example", dst: ".env", when: "missing" }
+
+tasks:
+  post_install:
+    mode: background
+    commands:
+      - "pnpm install"
+    notify: "Ready to code!"
+```
+
 ## 성공 기준
 - `add/list/remove`가 표준 git worktree 대비 동일/더 나은 UX 제공
 - `remove -b`가 안전하게 브랜치 삭제 처리
