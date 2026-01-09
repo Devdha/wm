@@ -151,6 +151,34 @@ func TestDetectPipRequirements(t *testing.T) {
 	}
 }
 
+func TestDetectPipWithVenv(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	// Create requirements.txt
+	if err := os.WriteFile(filepath.Join(tmpDir, "requirements.txt"), []byte("flask==2.0"), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	// Create .venv with pyvenv.cfg
+	venvDir := filepath.Join(tmpDir, ".venv")
+	if err := os.MkdirAll(venvDir, 0755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(venvDir, "pyvenv.cfg"), []byte("home = /usr/bin"), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	result := Detect(tmpDir)
+
+	if result.PackageManager != "pip" {
+		t.Errorf("expected pip, got %s", result.PackageManager)
+	}
+	expected := "source .venv/bin/activate && pip install -r requirements.txt"
+	if result.InstallCommand != expected {
+		t.Errorf("expected '%s', got '%s'", expected, result.InstallCommand)
+	}
+}
+
 func TestDetectNone(t *testing.T) {
 	tmpDir := t.TempDir()
 

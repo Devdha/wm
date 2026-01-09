@@ -106,18 +106,26 @@ func Detect(dir string) DetectionResult {
 
 	// Check Python (pip with pyproject.toml)
 	if fileExists(filepath.Join(dir, "pyproject.toml")) {
+		installCmd := "pip install -e ."
+		if venv := detectVenv(dir); venv != "" {
+			installCmd = "source " + venv + "/bin/activate && " + installCmd
+		}
 		return DetectionResult{
 			PackageManager: "pip",
-			InstallCommand: "pip install -e .",
+			InstallCommand: installCmd,
 			IsMonorepo:     false,
 		}
 	}
 
 	// Check Python (pip with requirements.txt)
 	if fileExists(filepath.Join(dir, "requirements.txt")) {
+		installCmd := "pip install -r requirements.txt"
+		if venv := detectVenv(dir); venv != "" {
+			installCmd = "source " + venv + "/bin/activate && " + installCmd
+		}
 		return DetectionResult{
 			PackageManager: "pip",
-			InstallCommand: "pip install -r requirements.txt",
+			InstallCommand: installCmd,
 			IsMonorepo:     false,
 		}
 	}
@@ -154,4 +162,16 @@ func isCargoWorkspace(dir string) bool {
 	}
 
 	return strings.Contains(string(data), "[workspace]")
+}
+
+func detectVenv(dir string) string {
+	// Check common venv directory names
+	for _, name := range []string{".venv", "venv"} {
+		venvPath := filepath.Join(dir, name)
+		// Check if pyvenv.cfg exists (confirms it's a venv)
+		if fileExists(filepath.Join(venvPath, "pyvenv.cfg")) {
+			return name
+		}
+	}
+	return ""
 }
