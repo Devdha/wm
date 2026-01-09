@@ -100,6 +100,57 @@ func TestDetectGo(t *testing.T) {
 	}
 }
 
+func TestDetectPoetry(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	if err := os.WriteFile(filepath.Join(tmpDir, "poetry.lock"), []byte(""), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	result := Detect(tmpDir)
+
+	if result.PackageManager != "poetry" {
+		t.Errorf("expected poetry, got %s", result.PackageManager)
+	}
+	if result.InstallCommand != "poetry install" {
+		t.Errorf("expected 'poetry install', got %s", result.InstallCommand)
+	}
+}
+
+func TestDetectPipenv(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	if err := os.WriteFile(filepath.Join(tmpDir, "Pipfile"), []byte(""), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	result := Detect(tmpDir)
+
+	if result.PackageManager != "pipenv" {
+		t.Errorf("expected pipenv, got %s", result.PackageManager)
+	}
+	if result.InstallCommand != "pipenv install" {
+		t.Errorf("expected 'pipenv install', got %s", result.InstallCommand)
+	}
+}
+
+func TestDetectPipRequirements(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	if err := os.WriteFile(filepath.Join(tmpDir, "requirements.txt"), []byte("flask==2.0"), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	result := Detect(tmpDir)
+
+	if result.PackageManager != "pip" {
+		t.Errorf("expected pip, got %s", result.PackageManager)
+	}
+	if result.InstallCommand != "pip install -r requirements.txt" {
+		t.Errorf("expected 'pip install -r requirements.txt', got %s", result.InstallCommand)
+	}
+}
+
 func TestDetectNone(t *testing.T) {
 	tmpDir := t.TempDir()
 

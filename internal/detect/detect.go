@@ -86,6 +86,42 @@ func Detect(dir string) DetectionResult {
 		}
 	}
 
+	// Check Python (poetry)
+	if fileExists(filepath.Join(dir, "poetry.lock")) {
+		return DetectionResult{
+			PackageManager: "poetry",
+			InstallCommand: "poetry install",
+			IsMonorepo:     false,
+		}
+	}
+
+	// Check Python (pipenv)
+	if fileExists(filepath.Join(dir, "Pipfile.lock")) || fileExists(filepath.Join(dir, "Pipfile")) {
+		return DetectionResult{
+			PackageManager: "pipenv",
+			InstallCommand: "pipenv install",
+			IsMonorepo:     false,
+		}
+	}
+
+	// Check Python (pip with pyproject.toml)
+	if fileExists(filepath.Join(dir, "pyproject.toml")) {
+		return DetectionResult{
+			PackageManager: "pip",
+			InstallCommand: "pip install -e .",
+			IsMonorepo:     false,
+		}
+	}
+
+	// Check Python (pip with requirements.txt)
+	if fileExists(filepath.Join(dir, "requirements.txt")) {
+		return DetectionResult{
+			PackageManager: "pip",
+			InstallCommand: "pip install -r requirements.txt",
+			IsMonorepo:     false,
+		}
+	}
+
 	return DetectionResult{}
 }
 
