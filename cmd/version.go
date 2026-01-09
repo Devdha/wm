@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/donghun/wm/internal/version"
+	"github.com/Devdha/wm/internal/version"
 	"github.com/spf13/cobra"
 )
 

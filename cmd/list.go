@@ -5,8 +5,8 @@ import (
 	"os"
 	"text/tabwriter"
 
-	"github.com/donghun/wm/internal/ui"
-	"github.com/donghun/wm/internal/workspace"
+	"github.com/Devdha/wm/internal/ui"
+	"github.com/Devdha/wm/internal/workspace"
 	"github.com/spf13/cobra"
 )
 

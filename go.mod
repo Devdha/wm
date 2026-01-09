@@ -1,4 +1,4 @@
-module github.com/donghun/wm
+module github.com/Devdha/wm
 
 go 1.25.4
 

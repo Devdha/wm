@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"github.com/donghun/wm/internal/ui"
-	"github.com/donghun/wm/internal/workspace"
+	"github.com/Devdha/wm/internal/ui"
+	"github.com/Devdha/wm/internal/workspace"
 	"github.com/spf13/cobra"
 )
 

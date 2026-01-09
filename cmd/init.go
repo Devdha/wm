@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/donghun/wm/internal/config"
-	"github.com/donghun/wm/internal/detect"
-	"github.com/donghun/wm/internal/ui"
+	"github.com/Devdha/wm/internal/config"
+	"github.com/Devdha/wm/internal/detect"
+	"github.com/Devdha/wm/internal/ui"
 	"github.com/spf13/cobra"
 )
 

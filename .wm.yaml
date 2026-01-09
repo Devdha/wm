@@ -1,0 +1,22 @@
+version: 1
+worktree:
+    base_dir: ../wm_wm
+scan:
+    ignore_dirs:
+        - .git
+        - node_modules
+        - dist
+        - build
+        - .next
+        - target
+        - vendor
+sync:
+    - src: .env
+      dst: .env
+      mode: copy
+      when: always
+tasks:
+    post_install:
+        mode: background
+        commands:
+            - go mod download

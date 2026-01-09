@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/donghun/wm/internal/config"
+	"github.com/Devdha/wm/internal/config"
 )
 
 func TestSyncCopy(t *testing.T) {

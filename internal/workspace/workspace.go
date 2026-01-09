@@ -8,11 +8,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/donghun/wm/internal/config"
-	"github.com/donghun/wm/internal/git"
-	"github.com/donghun/wm/internal/runner"
-	"github.com/donghun/wm/internal/sync"
-	"github.com/donghun/wm/internal/ui"
+	"github.com/Devdha/wm/internal/config"
+	"github.com/Devdha/wm/internal/git"
+	"github.com/Devdha/wm/internal/runner"
+	"github.com/Devdha/wm/internal/sync"
+	"github.com/Devdha/wm/internal/ui"
 )
 
 // Workspace represents a git repository with WM configuration

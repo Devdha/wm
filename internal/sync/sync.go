@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/donghun/wm/internal/config"
+	"github.com/Devdha/wm/internal/config"
 )
 
 // SyncFile syncs a single file from srcDir to dstDir based on SyncItem config
