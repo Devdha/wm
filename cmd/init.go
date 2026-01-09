@@ -4,17 +4,18 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/donghun/wm/internal/config"
 	"github.com/donghun/wm/internal/detect"
-	"github.com/donghun/wm/internal/tui"
+	"github.com/donghun/wm/internal/ui"
 	"github.com/spf13/cobra"
 )
 
 var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Initialize WM configuration",
-	Long:  "Create a .wm.yaml configuration file with interactive TUI.",
+	Long:  "Create a .wm.yaml configuration file with interactive prompts.",
 	RunE:  runInit,
 }
 
@@ -34,15 +35,69 @@ func runInit(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("%s already exists. Delete it first to reinitialize", config.ConfigFileName)
 	}
 
+	console := ui.NewConsole()
 	repoName := filepath.Base(cwd)
 
 	// Detect package manager
 	detection := detect.Detect(cwd)
 
-	// Run TUI
-	cfg, err := tui.RunInitTUI(cwd, repoName, detection)
-	if err != nil {
-		return err
+	console.Print("WM Init")
+	console.Print("=======")
+	console.Print("")
+
+	if detection.PackageManager != "" {
+		msg := fmt.Sprintf("Detected: %s", detection.PackageManager)
+		if detection.IsMonorepo {
+			msg += " (monorepo)"
+		}
+		console.Print(msg)
+		console.Print("")
+	}
+
+	// Step 1: Base directory
+	baseDir := console.Input(
+		"Worktree base directory",
+		"../wm_"+repoName,
+	)
+
+	// Step 2: Sync files
+	syncFiles := console.Input(
+		"Files to sync (comma-separated)",
+		".env",
+	)
+
+	// Step 3: Post-install command (if detected)
+	var installCmd string
+	if detection.InstallCommand != "" {
+		installCmd = console.Input(
+			"Post-install command",
+			detection.InstallCommand,
+		)
+	}
+
+	// Build config
+	cfg := config.NewConfig()
+	cfg.Worktree.BaseDir = baseDir
+
+	if syncFiles != "" {
+		parts := strings.Split(syncFiles, ",")
+		cfg.Sync = make([]config.SyncItem, len(parts))
+		for i, part := range parts {
+			path := strings.TrimSpace(part)
+			cfg.Sync[i] = config.SyncItem{
+				Src:  path,
+				Dst:  path,
+				Mode: "copy",
+				When: "always",
+			}
+		}
+	}
+
+	if installCmd != "" {
+		cfg.Tasks.PostInstall = config.PostInstallConfig{
+			Mode:     "background",
+			Commands: []string{installCmd},
+		}
 	}
 
 	// Save config
@@ -50,10 +105,12 @@ func runInit(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	fmt.Printf("\nCreated %s\n", config.ConfigFileName)
-	fmt.Println("\nNext steps:")
-	fmt.Println("  wm add <branch>  # Create a worktree")
-	fmt.Println("  wm list          # List worktrees")
+	console.Print("")
+	console.Printf("Created %s\n", config.ConfigFileName)
+	console.Print("")
+	console.Print("Next steps:")
+	console.Print("  wm add <branch>  # Create a worktree")
+	console.Print("  wm list          # List worktrees")
 
 	return nil
 }
