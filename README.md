@@ -4,9 +4,23 @@ A CLI tool that makes git worktree easier to use with file sync and background t
 
 ## Installation
 
+### npm / npx
 ```bash
-go install github.com/donghun/wm@latest
+# Run directly
+npx @devdha/wm --help
+
+# Or install globally
+npm install -g @devdha/wm
+wm --help
 ```
+
+### Go
+```bash
+go install github.com/Devdha/wm@latest
+```
+
+### Binary
+Download from [GitHub Releases](https://github.com/Devdha/wm/releases)
 
 ## Quick Start
 

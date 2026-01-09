@@ -1,0 +1,59 @@
+#!/usr/bin/env node
+
+const { execFileSync } = require("child_process");
+const { existsSync } = require("fs");
+const { join } = require("path");
+
+const PLATFORMS = {
+  "darwin arm64": "@devdha/wm-darwin-arm64",
+  "darwin x64": "@devdha/wm-darwin-x64",
+  "linux arm64": "@devdha/wm-linux-arm64",
+  "linux x64": "@devdha/wm-linux-x64",
+  "win32 x64": "@devdha/wm-win32-x64",
+};
+
+function getBinaryPath() {
+  const platformKey = `${process.platform} ${process.arch}`;
+  const pkg = PLATFORMS[platformKey];
+
+  if (!pkg) {
+    console.error(`Unsupported platform: ${platformKey}`);
+    console.error(`Supported platforms: ${Object.keys(PLATFORMS).join(", ")}`);
+    process.exit(1);
+  }
+
+  const binaryName = process.platform === "win32" ? "wm.exe" : "wm";
+
+  // Try to find the binary in node_modules
+  const paths = [
+    // When installed as dependency
+    join(__dirname, "..", "node_modules", pkg, "bin", binaryName),
+    // When installed globally or via npx
+    join(__dirname, "..", "..", pkg, "bin", binaryName),
+    // Hoisted in monorepo
+    join(__dirname, "..", "..", "..", pkg, "bin", binaryName),
+  ];
+
+  for (const p of paths) {
+    if (existsSync(p)) {
+      return p;
+    }
+  }
+
+  console.error(`Could not find wm binary for ${platformKey}`);
+  console.error(`Expected package: ${pkg}`);
+  console.error(`Searched paths:`);
+  paths.forEach((p) => console.error(`  - ${p}`));
+  process.exit(1);
+}
+
+const binary = getBinaryPath();
+
+try {
+  execFileSync(binary, process.argv.slice(2), { stdio: "inherit" });
+} catch (error) {
+  if (error.status !== undefined) {
+    process.exit(error.status);
+  }
+  throw error;
+}
