@@ -92,3 +92,28 @@ func TestFindConfigNotFound(t *testing.T) {
 		t.Error("expected error when no config found")
 	}
 }
+
+func TestSaveConfig(t *testing.T) {
+	tmpDir := t.TempDir()
+	configPath := filepath.Join(tmpDir, ".wm.yaml")
+
+	cfg := NewConfig()
+	cfg.Worktree.BaseDir = "../test_wm"
+	cfg.Sync = []SyncItem{
+		{Src: ".env", Mode: "copy", When: "always"},
+	}
+
+	if err := SaveConfig(configPath, cfg); err != nil {
+		t.Fatalf("SaveConfig failed: %v", err)
+	}
+
+	// Verify by loading
+	loaded, err := LoadConfig(configPath)
+	if err != nil {
+		t.Fatalf("LoadConfig failed: %v", err)
+	}
+
+	if loaded.Worktree.BaseDir != "../test_wm" {
+		t.Errorf("expected base_dir '../test_wm', got %s", loaded.Worktree.BaseDir)
+	}
+}

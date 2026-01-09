@@ -72,6 +72,20 @@ func LoadConfig(path string) (*Config, error) {
 	return cfg, nil
 }
 
+// SaveConfig writes a Config to a .wm.yaml file
+func SaveConfig(path string, cfg *Config) error {
+	data, err := yaml.Marshal(cfg)
+	if err != nil {
+		return fmt.Errorf("failed to marshal config: %w", err)
+	}
+
+	if err := os.WriteFile(path, data, 0644); err != nil {
+		return fmt.Errorf("failed to write config: %w", err)
+	}
+
+	return nil
+}
+
 // FindConfig searches for .wm.yaml starting from dir and walking up
 func FindConfig(dir string) (string, error) {
 	// Make sure we have an absolute path
