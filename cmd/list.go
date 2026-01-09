@@ -5,7 +5,8 @@ import (
 	"os"
 	"text/tabwriter"
 
-	"github.com/donghun/wm/internal/git"
+	"github.com/donghun/wm/internal/ui"
+	"github.com/donghun/wm/internal/workspace"
 	"github.com/spf13/cobra"
 )
 
@@ -22,17 +23,12 @@ func init() {
 }
 
 func runList(cmd *cobra.Command, args []string) error {
-	cwd, err := os.Getwd()
-	if err != nil {
-		return fmt.Errorf("failed to get current directory: %w", err)
-	}
-
-	repoRoot, err := git.GetRepoRoot(cwd)
+	ws, err := workspace.Open(ui.NewSilent(false))
 	if err != nil {
 		return err
 	}
 
-	worktrees, err := git.ListWorktrees(repoRoot)
+	worktrees, err := ws.ListWorktrees()
 	if err != nil {
 		return err
 	}
