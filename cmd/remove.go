@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/donghun/wm/internal/git"
@@ -49,9 +50,18 @@ func runRemove(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	// Convert relative path to absolute for comparison
+	absWtPath := wtPath
+	if !filepath.IsAbs(wtPath) {
+		absWtPath, _ = filepath.Abs(wtPath)
+	}
+	// Resolve symlinks (macOS /tmp -> /private/tmp)
+	absWtPath, _ = filepath.EvalSymlinks(absWtPath)
+
 	var targetWT *git.Worktree
 	for i, wt := range worktrees {
-		if wt.Path == wtPath || strings.HasSuffix(wt.Path, "/"+wtPath) {
+		wtPathResolved, _ := filepath.EvalSymlinks(wt.Path)
+		if wtPathResolved == absWtPath || wt.Path == wtPath || strings.HasSuffix(wt.Path, "/"+wtPath) {
 			targetWT = &worktrees[i]
 			wtPath = wt.Path // Use full path
 			break
