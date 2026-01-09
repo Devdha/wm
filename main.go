@@ -1,7 +1,7 @@
 package main
 
-import "fmt"
+import "github.com/donghun/wm/cmd"
 
 func main() {
-	fmt.Println("wm - git worktree manager")
+	cmd.Execute()
 }
