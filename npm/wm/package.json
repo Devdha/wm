@@ -1,5 +1,5 @@
 {
-  "name": "@devdha/wm",
+  "name": "gitwm",
   "version": "0.0.0",
   "description": "git worktree manager",
   "repository": {
@@ -14,10 +14,10 @@
     "bin"
   ],
   "optionalDependencies": {
-    "@devdha/wm-darwin-arm64": "0.0.0",
-    "@devdha/wm-darwin-x64": "0.0.0",
-    "@devdha/wm-linux-arm64": "0.0.0",
-    "@devdha/wm-linux-x64": "0.0.0",
-    "@devdha/wm-win32-x64": "0.0.0"
+    "gitwm-darwin-arm64": "0.0.0",
+    "gitwm-darwin-x64": "0.0.0",
+    "gitwm-linux-arm64": "0.0.0",
+    "gitwm-linux-x64": "0.0.0",
+    "gitwm-win32-x64": "0.0.0"
   }
 }

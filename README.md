@@ -7,10 +7,10 @@ A CLI tool that makes git worktree easier to use with file sync and background t
 ### npm / npx
 ```bash
 # Run directly
-npx @devdha/wm --help
+npx gitwm --help
 
 # Or install globally
-npm install -g @devdha/wm
+npm install -g gitwm
 wm --help
 ```
 

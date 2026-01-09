@@ -21,8 +21,8 @@ mkdir -p "$NPM_DIR"
 for goreleaser_name in "${!PLATFORMS[@]}"; do
   read -r npm_suffix os cpu <<< "${PLATFORMS[$goreleaser_name]}"
 
-  pkg_name="@devdha/wm-${npm_suffix}"
-  pkg_dir="$NPM_DIR/wm-${npm_suffix}"
+  pkg_name="gitwm-${npm_suffix}"
+  pkg_dir="$NPM_DIR/gitwm-${npm_suffix}"
 
   echo "Building $pkg_name..."
 
@@ -69,8 +69,8 @@ EOF
 done
 
 # Build main package
-echo "Building @devdha/wm..."
-pkg_dir="$NPM_DIR/wm"
+echo "Building gitwm..."
+pkg_dir="$NPM_DIR/gitwm"
 mkdir -p "$pkg_dir/bin"
 cp npm/wm/bin/wm "$pkg_dir/bin/"
 chmod +x "$pkg_dir/bin/wm"
@@ -78,7 +78,7 @@ chmod +x "$pkg_dir/bin/wm"
 # Update version in main package
 cat > "$pkg_dir/package.json" << EOF
 {
-  "name": "@devdha/wm",
+  "name": "gitwm",
   "version": "$VERSION",
   "description": "git worktree manager",
   "repository": {
@@ -91,16 +91,16 @@ cat > "$pkg_dir/package.json" << EOF
   },
   "files": ["bin"],
   "optionalDependencies": {
-    "@devdha/wm-darwin-arm64": "$VERSION",
-    "@devdha/wm-darwin-x64": "$VERSION",
-    "@devdha/wm-linux-arm64": "$VERSION",
-    "@devdha/wm-linux-x64": "$VERSION",
-    "@devdha/wm-win32-x64": "$VERSION"
+    "gitwm-darwin-arm64": "$VERSION",
+    "gitwm-darwin-x64": "$VERSION",
+    "gitwm-linux-arm64": "$VERSION",
+    "gitwm-linux-x64": "$VERSION",
+    "gitwm-win32-x64": "$VERSION"
   }
 }
 EOF
 
-echo "Created @devdha/wm"
+echo "Created gitwm"
 echo ""
 echo "All packages built in $NPM_DIR/"
 ls -la "$NPM_DIR/"

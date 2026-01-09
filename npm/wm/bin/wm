@@ -5,11 +5,11 @@ const { existsSync } = require("fs");
 const { join } = require("path");
 
 const PLATFORMS = {
-  "darwin arm64": "@devdha/wm-darwin-arm64",
-  "darwin x64": "@devdha/wm-darwin-x64",
-  "linux arm64": "@devdha/wm-linux-arm64",
-  "linux x64": "@devdha/wm-linux-x64",
-  "win32 x64": "@devdha/wm-win32-x64",
+  "darwin arm64": "gitwm-darwin-arm64",
+  "darwin x64": "gitwm-darwin-x64",
+  "linux arm64": "gitwm-linux-arm64",
+  "linux x64": "gitwm-linux-x64",
+  "win32 x64": "gitwm-win32-x64",
 };
 
 function getBinaryPath() {
