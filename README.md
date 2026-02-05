@@ -1,6 +1,10 @@
+
+
 # WM - Git Worktree Manager
 
 A CLI tool that makes git worktree easier to use with file sync and background tasks.
+
+![CleanShot 2026-02-05 at 16 37 12](https://github.com/user-attachments/assets/51f9519d-01ea-478e-aefd-adbe3deb134a)
 
 ## Installation
 
