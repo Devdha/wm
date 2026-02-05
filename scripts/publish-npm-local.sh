@@ -93,9 +93,10 @@ EOF
 # main package
 mkdir -p "$NPM_DIR/gitwm/bin"
 cp npm/wm/bin/wm "$NPM_DIR/gitwm/bin/"
+cp README.md "$NPM_DIR/gitwm/"
 chmod +x "$NPM_DIR/gitwm/bin/wm"
 cat > "$NPM_DIR/gitwm/package.json" << EOF
-{"name":"gitwm","version":"$VERSION","description":"git worktree manager","license":"MIT","bin":{"wm":"bin/wm"},"files":["bin"],"optionalDependencies":{"gitwm-darwin-arm64":"$VERSION","gitwm-darwin-x64":"$VERSION","gitwm-linux-arm64":"$VERSION","gitwm-linux-x64":"$VERSION","gitwm-win32-x64":"$VERSION"}}
+{"name":"gitwm","version":"$VERSION","description":"git worktree manager","license":"MIT","bin":{"wm":"bin/wm"},"files":["bin","README.md"],"optionalDependencies":{"gitwm-darwin-arm64":"$VERSION","gitwm-darwin-x64":"$VERSION","gitwm-linux-arm64":"$VERSION","gitwm-linux-x64":"$VERSION","gitwm-win32-x64":"$VERSION"}}
 EOF
 
 echo "=== Publishing to npm (OTP required for each package) ==="
