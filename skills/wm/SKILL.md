@@ -5,95 +5,110 @@ description: Use when working with git worktrees - creating isolated workspaces 
 
 # WM - Git Worktree Manager
 
-git worktree를 쉽게 관리하는 CLI 도구.
+CLI tool for easy git worktree management.
 
-## 설치
+## IMPORTANT: Non-Interactive Mode Required
+
+**Always use explicit arguments. Interactive mode does not work in automated environments.**
 
 ```bash
-# npm
-npm install -g gitwm
+# CORRECT - explicit arguments
+wm add feature-auth
+wm remove feature-auth
 
-# Go
-go install github.com/Devdha/wm@latest
+# WRONG - interactive mode (will hang)
+wm add      # NO!
+wm remove   # NO!
 ```
 
 ## Quick Reference
 
-| 명령어 | 설명 |
-|--------|------|
-| `wm init` | 프로젝트 설정 (.wm.yaml 생성) |
-| `wm add <branch>` | worktree 생성 |
-| `wm list` / `wm ls` | 모든 worktree 조회 |
-| `wm remove <path>` | worktree 삭제 |
-| `wm remove -b <path>` | worktree + 브랜치 삭제 |
+| Command | Description |
+|---------|-------------|
+| `wm init` | Initialize project config (.wm.yaml) |
+| `wm add <branch>` | Create worktree for branch |
+| `wm add <branch> -p <path>` | Create worktree at custom path |
+| `wm list` | List all worktrees |
+| `wm remove <branch>` | Remove worktree by branch name |
+| `wm remove <path>` | Remove worktree by path |
+| `wm remove -b <branch>` | Remove worktree AND delete branch |
+| `wm remove -f <branch>` | Force remove (skip confirmation) |
 
-## 핵심 패턴
+## Common Patterns
 
-### Worktree 생성
+### Create Worktree
 
 ```bash
-# 기본: ../wm_{repo}/{branch} 에 생성
+# Basic usage
 wm add feature-login
 
-# 슬래시 브랜치: feature/auth → feature-auth 폴더로 생성
-wm add feature/auth
-# 결과: ../wm_myrepo/feature-auth/
-
-# 커스텀 경로
+# With custom path
 wm add feature-login -p ./workspaces/login
+
+# Branch with slash becomes hyphenated folder
+wm add feature/auth
+# Creates: ../wm_repo/feature-auth/
 ```
 
-### Worktree 삭제
+### Remove Worktree
 
 ```bash
-# 경로로 삭제
-wm remove ../wm_myrepo/feature-auth
-
-# 브랜치 이름으로 삭제 (둘 다 동작)
-wm remove feature/auth
+# By branch name
 wm remove feature-auth
 
-# 브랜치도 함께 삭제
-wm remove -b feature/auth
+# By path
+wm remove ../wm_repo/feature-auth
 
-# 강제 삭제 (확인 스킵)
-wm remove -f feature/auth
+# Also delete the git branch
+wm remove -b feature-auth
+
+# Force (skip confirmation)
+wm remove -f feature-auth
 ```
 
-## 설정 (.wm.yaml)
+### List Worktrees
+
+```bash
+wm list
+# or
+wm ls
+```
+
+## Configuration (.wm.yaml)
 
 ```yaml
 version: 1
 
 worktree:
-  base_dir: "../wm_{repo}"  # {repo}는 레포 이름으로 치환
+  base_dir: "../wm_{repo}"  # {repo} replaced with repo name
 
 sync:
-  - ".env"                  # worktree에 복사
-  - "apps/*/.env"           # glob 지원
+  - ".env"                  # Copy to worktree
+  - "apps/*/.env"           # Glob supported
   - src: ".env.example"
     dst: ".env"
-    mode: copy              # 또는 "symlink"
-    when: missing           # 또는 "always"
+    mode: copy              # or "symlink"
+    when: missing           # or "always"
 
 tasks:
   post_install:
-    mode: background        # 비동기 실행
+    mode: background        # Async execution
     commands:
-      - "pnpm install"
+      - "npm install"
 ```
 
 ## When to Use
 
-- 여러 기능을 병렬로 개발할 때
-- PR 리뷰하면서 다른 작업할 때
-- 긴 빌드/테스트 중에 다른 브랜치 작업할 때
-- 브랜치 간 빠른 전환이 필요할 때
+- Working on multiple features in parallel
+- Reviewing PRs while continuing other work
+- Running long builds/tests on separate branch
+- Quick branch switching without stash
 
 ## Common Mistakes
 
-| 실수 | 해결 |
-|------|------|
-| `feature/auth` 브랜치가 중첩 폴더 생성 | v0.1.1+에서 자동으로 `feature-auth` 폴더 생성 |
-| main worktree 삭제 시도 | 자동 방지됨 |
-| 다른 worktree에서 사용 중인 브랜치 삭제 | 경고 후 확인 |
+| Mistake | Solution |
+|---------|----------|
+| Using interactive mode | Always provide branch/path argument |
+| Expecting nested folders for `feature/auth` | Creates `feature-auth` (flat) since v0.1.1 |
+| Trying to remove main worktree | Not allowed - main worktree is protected |
+| Branch used by another worktree | Warning shown, requires confirmation |
