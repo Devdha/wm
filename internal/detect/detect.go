@@ -47,12 +47,8 @@ func Detect(dir string) DetectionResult {
 	// Check npm (package-lock.json or package.json with workspaces)
 	if fileExists(filepath.Join(dir, "package-lock.json")) || fileExists(filepath.Join(dir, "package.json")) {
 		isMonorepo := hasWorkspacesInPackageJson(dir)
-		pm := "npm"
-		if isMonorepo && !fileExists(filepath.Join(dir, "package-lock.json")) {
-			// Has workspaces but no lock file - could be npm
-		}
 		return DetectionResult{
-			PackageManager: pm,
+			PackageManager: "npm",
 			InstallCommand: "npm install",
 			IsMonorepo:     isMonorepo,
 		}

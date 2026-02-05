@@ -163,10 +163,10 @@ sync:
 	// Commit .env so we can create worktree
 	cmd := exec.Command("git", "add", ".env", ".wm.yaml")
 	cmd.Dir = repoDir
-	cmd.Run()
+	_ = cmd.Run()
 	cmd = exec.Command("git", "commit", "-m", "add env")
 	cmd.Dir = repoDir
-	cmd.Run()
+	_ = cmd.Run()
 
 	// Add worktree
 	cmd = exec.Command(wmBin, "add", "sync-test")
@@ -206,7 +206,7 @@ worktree:
 	cmd := exec.Command(wmBin, "add", "branch-to-delete")
 	cmd.Dir = repoDir
 	cmd.Stdin = strings.NewReader("y\n")
-	cmd.Run()
+	_ = cmd.Run()
 
 	// Resolve to absolute path with symlinks resolved
 	wtPath := filepath.Join(repoDir, "..", "wm_branch_test", "branch-to-delete")
