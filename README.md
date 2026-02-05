@@ -1,10 +1,16 @@
-
-
 # WM - Git Worktree Manager
 
 A CLI tool that makes git worktree easier to use with file sync and background tasks.
 
 ![CleanShot 2026-02-05 at 16 37 12](https://github.com/user-attachments/assets/51f9519d-01ea-478e-aefd-adbe3deb134a)
+
+## Features
+
+- **Interactive UI** - Arrow key selection for add/remove operations
+- **Origin branch detection** - Automatically fetch from remote when branch exists on origin
+- **File sync** - Copy or symlink files (`.env`, configs) to worktrees
+- **Post-install tasks** - Run commands after worktree creation (background supported)
+- **Pretty output** - Colored output with spinners and styled tables
 
 ## Installation
 
@@ -32,17 +38,67 @@ Download from [GitHub Releases](https://github.com/Devdha/wm/releases)
 # Initialize in your project
 wm init
 
-# Create a worktree for a feature branch
+# Create a worktree (interactive mode)
+wm add
+
+# Or specify branch directly
 wm add feature-login
 
 # List all worktrees
 wm list
 
-# Remove a worktree
-wm remove ../wm_myrepo/feature-login
+# Remove a worktree (interactive mode)
+wm remove
+
+# Or specify path/branch
+wm remove feature-login
 
 # Remove worktree and delete branch
-wm remove -b ../wm_myrepo/feature-login
+wm remove -b feature-login
+```
+
+## Interactive Mode
+
+### `wm add` (no arguments)
+
+Select from origin branches or type a new branch name:
+
+```
+? Enter branch name or select from origin:
+  [                    ]  ← Type here or press ↓
+  ─────────────────────
+  ❯ origin/feature-auth
+    origin/bugfix-123
+    origin/develop
+```
+
+- **Tab**: Switch between input and selection
+- **↑↓**: Navigate options
+- **Enter**: Confirm
+
+### `wm remove` (no arguments)
+
+Select a worktree to remove:
+
+```
+? Select worktree to remove:
+  ❯ ../wm_repo/feature-auth (feature-auth)
+    ../wm_repo/bugfix-123   (bugfix-123)
+    ../wm_repo/main         (main) [main]
+```
+
+### Origin Branch Detection
+
+When you run `wm add feature-auth` and the branch exists on origin:
+
+```
+⚡ Creating worktree for 'feature-auth'...
+
+  Branch 'feature-auth' exists on origin but not locally.
+? Checkout from origin? (Y/n)
+
+📦 Fetching origin/feature-auth...
+✓ Worktree ready: ../wm_repo/feature-auth
 ```
 
 ## Configuration
@@ -76,31 +132,53 @@ tasks:
 
 Interactive setup to create `.wm.yaml`.
 
-### `wm add <branch>`
+### `wm add [branch]`
 
-Create a new worktree. Options:
+Create a new worktree.
+
+- Without arguments: Interactive mode (select from origin or type new name)
+- With branch: Create worktree for that branch
+- If branch exists on origin but not locally: Prompts to fetch
+
+Options:
 - `--path, -p`: Custom worktree path
+
+**Note**: Branch names with slashes (e.g., `feature/auth`) create flat folders (`feature-auth`), not nested directories.
 
 ### `wm list`
 
-List all worktrees in table format.
+List all worktrees in a styled table.
 
-### `wm remove <path>`
+```
+┌────────────────────────────┬────────────────┬─────────┐
+│ PATH                       │ BRANCH         │ HEAD    │
+├────────────────────────────┼────────────────┼─────────┤
+│ ../wm_repo/feature-auth    │ feature-auth   │ a1b2c3d │
+│ ../wm_repo/main            │ main           │ d4e5f6g │
+└────────────────────────────┴────────────────┴─────────┘
+```
 
-Remove a worktree. Options:
+### `wm remove [path]`
+
+Remove a worktree.
+
+- Without arguments: Interactive mode (select from list)
+- With path or branch name: Remove that worktree
+
+Options:
 - `-f, --force`: Skip confirmation
 - `-b, --branch`: Also delete the branch
 
 ## Claude Code Skill
 
-Claude Code에서 wm을 사용할 때 도움이 되는 스킬이 포함되어 있습니다.
+A skill for Claude Code users is included:
 
 ```bash
-# 스킬 복사 (Claude Code 사용자)
+# Copy skill (Claude Code users)
 cp -r skills/wm ~/.claude/skills/
 ```
 
-또는 프로젝트의 `.claude/skills/`에 복사하여 프로젝트별로 사용할 수 있습니다.
+Or copy to your project's `.claude/skills/` for project-specific use.
 
 ## License
 
