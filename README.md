@@ -87,6 +87,17 @@ Remove a worktree. Options:
 - `-f, --force`: Skip confirmation
 - `-b, --branch`: Also delete the branch
 
+## Claude Code Skill
+
+Claude Code에서 wm을 사용할 때 도움이 되는 스킬이 포함되어 있습니다.
+
+```bash
+# 스킬 복사 (Claude Code 사용자)
+cp -r skills/wm ~/.claude/skills/
+```
+
+또는 프로젝트의 `.claude/skills/`에 복사하여 프로젝트별로 사용할 수 있습니다.
+
 ## License
 
 MIT
