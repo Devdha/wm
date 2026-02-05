@@ -107,7 +107,11 @@ func (w *Workspace) resolveWorktreePath(branch, customPath string) string {
 	if !filepath.IsAbs(baseDir) {
 		baseDir = filepath.Join(w.Root, baseDir)
 	}
-	return filepath.Join(baseDir, branch)
+	return filepath.Join(baseDir, sanitizeBranchName(branch))
+}
+
+func sanitizeBranchName(branch string) string {
+	return strings.ReplaceAll(branch, "/", "-")
 }
 
 func (w *Workspace) syncFiles(wtPath string) error {
@@ -192,10 +196,13 @@ func (w *Workspace) RemoveWorktree(path string, deleteBranch, force bool) error 
 
 func (w *Workspace) findWorktree(worktrees []git.Worktree, path string) *git.Worktree {
 	absPath := resolvePath(path)
+	sanitizedPath := sanitizeBranchName(path)
 
 	for i, wt := range worktrees {
 		wtResolved := resolvePath(wt.Path)
-		if wtResolved == absPath || wt.Path == path || strings.HasSuffix(wt.Path, "/"+path) {
+		if wtResolved == absPath || wt.Path == path ||
+			strings.HasSuffix(wt.Path, "/"+path) ||
+			strings.HasSuffix(wt.Path, "/"+sanitizedPath) {
 			return &worktrees[i]
 		}
 	}
