@@ -8,3 +8,10 @@ wm
 
 # OS
 .DS_Store
+
+# OMC state
+.omc/
+
+# Build artifacts
+dist/
+npm-dist/

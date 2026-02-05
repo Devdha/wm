@@ -2,9 +2,9 @@ VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev
 COMMIT ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 DATE ?= $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-LDFLAGS = -X github.com/donghun/wm/internal/version.Version=$(VERSION) \
-          -X github.com/donghun/wm/internal/version.GitCommit=$(COMMIT) \
-          -X github.com/donghun/wm/internal/version.BuildDate=$(DATE)
+LDFLAGS = -X github.com/Devdha/wm/internal/version.Version=$(VERSION) \
+          -X github.com/Devdha/wm/internal/version.GitCommit=$(COMMIT) \
+          -X github.com/Devdha/wm/internal/version.BuildDate=$(DATE)
 
 .PHONY: build test clean install
 
