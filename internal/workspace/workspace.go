@@ -70,16 +70,20 @@ func (w *Workspace) AddWorktree(branch string, customPath string) error {
 	if createBranch {
 		msg := fmt.Sprintf("Branch '%s' does not exist. Create it?", branch)
 		if !w.UI.Confirm(msg) {
-			w.UI.Print("Aborted.")
+			ui.PrintWarning("Aborted.")
 			return nil
 		}
 	}
 
-	w.UI.Printf("Creating worktree at %s...\n", wtPath)
+	fmt.Println()
+	ui.PrintStep(ui.IconBolt, "Creating worktree...")
+	ui.PrintSubStep(fmt.Sprintf("Branch: %s", branch))
+	ui.PrintSubStepEnd(fmt.Sprintf("Path: %s", wtPath))
+	fmt.Println()
+
 	if err := git.AddWorktree(w.Root, wtPath, branch, createBranch); err != nil {
 		return err
 	}
-	w.UI.Print("Worktree created.")
 
 	if err := w.syncFiles(wtPath); err != nil {
 		return err
@@ -89,8 +93,13 @@ func (w *Workspace) AddWorktree(branch string, customPath string) error {
 		return err
 	}
 
-	w.UI.Printf("\nWorktree ready: %s\n", wtPath)
-	w.UI.Printf("  cd %s\n", wtPath)
+	fmt.Println()
+	ui.Success.Print(ui.IconCheck + " ")
+	ui.Bold.Print("Worktree ready: ")
+	fmt.Println(wtPath)
+	fmt.Println()
+	ui.Muted.Printf("  cd %s\n", wtPath)
+	fmt.Println()
 	return nil
 }
 
@@ -119,11 +128,15 @@ func (w *Workspace) syncFiles(wtPath string) error {
 		return nil
 	}
 
-	w.UI.Print("Syncing files...")
+	ui.PrintStep(ui.IconPackage, "Syncing files...")
 	if err := sync.SyncAll(w.Root, wtPath, w.Config.Sync); err != nil {
 		return fmt.Errorf("failed to sync files: %w", err)
 	}
-	w.UI.Printf("Synced %d file(s).\n", len(w.Config.Sync))
+
+	for _, item := range w.Config.Sync {
+		ui.PrintSubStep(fmt.Sprintf("%s %s", item.Src, ui.Success.Sprint(ui.IconCheck)))
+	}
+	fmt.Println()
 	return nil
 }
 
@@ -133,17 +146,21 @@ func (w *Workspace) runPostInstall(wtPath string) error {
 		return nil
 	}
 
-	w.UI.Print("Running post-install tasks...")
+	ui.PrintStep(ui.IconRocket, "Running post-install...")
 	isBackground := w.Config.Tasks.PostInstall.Mode == "background"
+
 	if err := runner.RunCommands(wtPath, cmds, isBackground); err != nil {
 		return fmt.Errorf("post-install failed: %w", err)
 	}
 
-	if isBackground {
-		w.UI.Print("Background tasks started.")
-	} else {
-		w.UI.Print("Post-install completed.")
+	for _, cmd := range cmds {
+		suffix := ""
+		if isBackground {
+			suffix = " " + ui.Muted.Sprint("(background)")
+		}
+		ui.PrintSubStep(cmd + suffix)
 	}
+	fmt.Println()
 	return nil
 }
 
@@ -170,7 +187,7 @@ func (w *Workspace) RemoveWorktree(path string, deleteBranch, force bool) error 
 		}
 		msg += "?"
 		if !w.UI.Confirm(msg) {
-			w.UI.Print("Aborted.")
+			ui.PrintWarning("Aborted.")
 			return nil
 		}
 	}
@@ -181,16 +198,21 @@ func (w *Workspace) RemoveWorktree(path string, deleteBranch, force bool) error 
 		}
 	}
 
-	w.UI.Printf("Removing worktree...")
+	fmt.Println()
+	spinner := ui.NewSpinner("Removing worktree...")
+	spinner.Start()
+
 	if err := git.RemoveWorktree(w.Root, target.Path, force); err != nil {
+		spinner.Fail("Failed to remove worktree")
 		return err
 	}
-	w.UI.Print(" done.")
+	spinner.Success(fmt.Sprintf("Removed worktree: %s", target.Path))
 
 	if deleteBranch && target.Branch != "" {
 		w.deleteBranch(target.Branch)
 	}
 
+	fmt.Println()
 	return nil
 }
 
@@ -231,11 +253,13 @@ func (w *Workspace) checkBranchNotUsedElsewhere(worktrees []git.Worktree, target
 }
 
 func (w *Workspace) deleteBranch(branch string) {
-	w.UI.Printf("Deleting branch '%s'...", branch)
+	spinner := ui.NewSpinner(fmt.Sprintf("Deleting branch '%s'...", branch))
+	spinner.Start()
+
 	if err := git.DeleteBranch(w.Root, branch, false); err != nil {
-		w.UI.Printf(" failed: %v\n", err)
-		w.UI.Print("Tip: Use 'git branch -D' to force delete.")
+		spinner.Fail(fmt.Sprintf("Failed to delete branch '%s': %v", branch, err))
+		ui.Muted.Println("  Tip: Use 'git branch -D' to force delete.")
 	} else {
-		w.UI.Print(" done.")
+		spinner.Success(fmt.Sprintf("Deleted branch: %s", branch))
 	}
 }

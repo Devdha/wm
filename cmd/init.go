@@ -41,17 +41,18 @@ func runInit(cmd *cobra.Command, args []string) error {
 	// Detect package manager
 	detection := detect.Detect(cwd)
 
-	console.Print("WM Init")
-	console.Print("=======")
-	console.Print("")
+	// Beautiful header
+	fmt.Println()
+	ui.DrawBox("WM - Git Worktree Manager", 35)
+	fmt.Println()
 
 	if detection.PackageManager != "" {
-		msg := fmt.Sprintf("Detected: %s", detection.PackageManager)
+		msg := fmt.Sprintf("%s Detected: %s", ui.IconPackage, detection.PackageManager)
 		if detection.IsMonorepo {
 			msg += " (monorepo)"
 		}
-		console.Print(msg)
-		console.Print("")
+		ui.Info.Println(msg)
+		fmt.Println()
 	}
 
 	// Step 1: Base directory
@@ -105,12 +106,13 @@ func runInit(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	console.Print("")
-	console.Printf("Created %s\n", config.ConfigFileName)
-	console.Print("")
-	console.Print("Next steps:")
-	console.Print("  wm add <branch>  # Create a worktree")
-	console.Print("  wm list          # List worktrees")
+	fmt.Println()
+	ui.PrintSuccess("Created " + config.ConfigFileName)
+	fmt.Println()
+	ui.Bold.Println("Next steps:")
+	ui.Muted.Println("  wm add <branch>  Create a worktree")
+	ui.Muted.Println("  wm list          List worktrees")
+	fmt.Println()
 
 	return nil
 }

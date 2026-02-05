@@ -26,18 +26,22 @@ func NewConsole() *Console {
 }
 
 func (c *Console) Confirm(message string) bool {
-	fmt.Print(message + " [y/N]: ")
+	Accent.Print("? ")
+	fmt.Print(message + " ")
+	Muted.Print("[y/N]: ")
 	answer, _ := c.reader.ReadString('\n')
 	answer = strings.TrimSpace(strings.ToLower(answer))
 	return answer == "y" || answer == "yes"
 }
 
 func (c *Console) Input(prompt, defaultValue string) string {
+	Accent.Print("? ")
+	fmt.Print(prompt)
 	if defaultValue != "" {
-		fmt.Printf("%s [%s]: ", prompt, defaultValue)
-	} else {
-		fmt.Printf("%s: ", prompt)
+		fmt.Print(" ")
+		Muted.Printf("[%s]", defaultValue)
 	}
+	fmt.Print(": ")
 	answer, _ := c.reader.ReadString('\n')
 	answer = strings.TrimSpace(answer)
 	if answer == "" {
