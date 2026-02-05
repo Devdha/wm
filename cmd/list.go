@@ -12,8 +12,12 @@ var listCmd = &cobra.Command{
 	Use:     "list",
 	Aliases: []string{"ls"},
 	Short:   "List all worktrees",
-	Long:    "List all git worktrees in the current repository with their branches and status.",
-	RunE:    runList,
+	Long: `List all git worktrees in the current repository with their branches and status.
+
+Examples:
+  wm list
+  wm ls`,
+	RunE: runList,
 }
 
 func init() {

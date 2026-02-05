@@ -15,9 +15,14 @@ var addPath string
 var addCmd = &cobra.Command{
 	Use:   "add [branch]",
 	Short: "Create a new worktree",
-	Long:  "Create a new git worktree with file sync and optional background tasks. If no branch is provided, an interactive selection menu will appear.",
-	Args:  cobra.MaximumNArgs(1),
-	RunE:  runAdd,
+	Long: `Create a new git worktree with file sync and optional background tasks. If no branch is provided, an interactive selection menu will appear.
+
+Examples:
+  wm add feature-login
+  wm add feature-login -p ~/custom/path
+  wm add                              # Interactive mode`,
+	Args: cobra.MaximumNArgs(1),
+	RunE: runAdd,
 }
 
 func init() {
@@ -60,6 +65,11 @@ func runAddInteractive(ws *workspace.Workspace) (string, string, error) {
 	remoteBranches, err := git.ListRemoteBranches(ws.Root)
 	if err != nil {
 		remoteBranches = []string{} // Continue even if remote fetch fails
+	}
+
+	// Handle empty remote branches with a helpful placeholder
+	if len(remoteBranches) == 0 {
+		remoteBranches = []string{"(No remote branches found - type a branch name above)"}
 	}
 
 	// Build options from remote branches

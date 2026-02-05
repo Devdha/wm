@@ -15,9 +15,15 @@ var removeCmd = &cobra.Command{
 	Use:     "remove [path]",
 	Aliases: []string{"rm"},
 	Short:   "Remove a worktree",
-	Long:    "Remove a git worktree. Optionally delete the associated branch. If no path is provided, an interactive selection menu will appear.",
-	Args:    cobra.MaximumNArgs(1),
-	RunE:    runRemove,
+	Long: `Remove a git worktree. Optionally delete the associated branch. If no path is provided, an interactive selection menu will appear.
+
+Examples:
+  wm remove feature-login
+  wm remove feature-login -b          # Also delete branch
+  wm remove -f feature-login          # Skip confirmation
+  wm remove                           # Interactive mode`,
+	Args: cobra.MaximumNArgs(1),
+	RunE: runRemove,
 }
 
 func init() {

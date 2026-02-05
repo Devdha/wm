@@ -10,12 +10,11 @@ import (
 // RunCommands executes a list of commands in the specified directory
 func RunCommands(dir string, commands []string, background bool) error {
 	for _, cmdStr := range commands {
-		parts := strings.Fields(cmdStr)
-		if len(parts) == 0 {
+		if strings.TrimSpace(cmdStr) == "" {
 			continue
 		}
 
-		cmd := exec.Command(parts[0], parts[1:]...)
+		cmd := exec.Command("sh", "-c", cmdStr)
 		cmd.Dir = dir
 
 		if background {

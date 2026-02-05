@@ -50,10 +50,15 @@ func (m selectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.cursor = len(m.options) - 1
 			}
 			// Skip disabled items
+			checked := 0
 			for m.options[m.cursor].Disabled {
 				m.cursor--
 				if m.cursor < 0 {
 					m.cursor = len(m.options) - 1
+				}
+				checked++
+				if checked >= len(m.options) {
+					break // All options are disabled
 				}
 			}
 
@@ -63,10 +68,15 @@ func (m selectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.cursor = 0
 			}
 			// Skip disabled items
+			checked := 0
 			for m.options[m.cursor].Disabled {
 				m.cursor++
 				if m.cursor >= len(m.options) {
 					m.cursor = 0
+				}
+				checked++
+				if checked >= len(m.options) {
+					break // All options are disabled
 				}
 			}
 

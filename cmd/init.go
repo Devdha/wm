@@ -15,8 +15,11 @@ import (
 var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Initialize WM configuration",
-	Long:  "Create a .wm.yaml configuration file with interactive prompts.",
-	RunE:  runInit,
+	Long: `Create a .wm.yaml configuration file with interactive prompts.
+
+Examples:
+  wm init`,
+	RunE: runInit,
 }
 
 func init() {
