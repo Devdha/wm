@@ -8,6 +8,32 @@ import (
 	"strings"
 )
 
+func runGit(dir string, args ...string) ([]byte, error) {
+	cmd := exec.Command("git", args...)
+	cmd.Dir = dir
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return nil, fmt.Errorf("git %s failed: %w\n%s", args[0], err, out)
+	}
+	return out, nil
+}
+
+func runGitOutput(dir string, args ...string) (string, error) {
+	cmd := exec.Command("git", args...)
+	cmd.Dir = dir
+	out, err := cmd.Output()
+	if err != nil {
+		return "", fmt.Errorf("git %s failed: %w", args[0], err)
+	}
+	return strings.TrimSpace(string(out)), nil
+}
+
+func runGitSilent(dir string, args ...string) bool {
+	cmd := exec.Command("git", args...)
+	cmd.Dir = dir
+	return cmd.Run() == nil
+}
+
 // Worktree represents a git worktree entry
 type Worktree struct {
 	Path   string
@@ -18,14 +44,10 @@ type Worktree struct {
 
 // ListWorktrees returns all worktrees for a repository
 func ListWorktrees(repoDir string) ([]Worktree, error) {
-	cmd := exec.Command("git", "worktree", "list", "--porcelain")
-	cmd.Dir = repoDir
-
-	out, err := cmd.Output()
+	out, err := runGit(repoDir, "worktree", "list", "--porcelain")
 	if err != nil {
-		return nil, fmt.Errorf("git worktree list failed: %w", err)
+		return nil, err
 	}
-
 	return parseWorktreeList(out), nil
 }
 
@@ -52,14 +74,12 @@ func parseWorktreeList(data []byte) []Worktree {
 			current.HEAD = strings.TrimPrefix(line, "HEAD ")
 		case strings.HasPrefix(line, "branch "):
 			branch := strings.TrimPrefix(line, "branch ")
-			// Remove refs/heads/ prefix
 			current.Branch = strings.TrimPrefix(branch, "refs/heads/")
 		case line == "bare":
 			current.Bare = true
 		}
 	}
 
-	// Don't forget the last entry
 	if current.Path != "" {
 		worktrees = append(worktrees, current)
 	}
@@ -77,15 +97,8 @@ func AddWorktree(repoDir, path, branch string, createBranch bool) error {
 	if !createBranch {
 		args = append(args, branch)
 	}
-
-	cmd := exec.Command("git", args...)
-	cmd.Dir = repoDir
-
-	if out, err := cmd.CombinedOutput(); err != nil {
-		return fmt.Errorf("git worktree add failed: %w\n%s", err, out)
-	}
-
-	return nil
+	_, err := runGit(repoDir, args...)
+	return err
 }
 
 // RemoveWorktree removes a worktree
@@ -95,22 +108,13 @@ func RemoveWorktree(repoDir, path string, force bool) error {
 		args = append(args, "--force")
 	}
 	args = append(args, path)
-
-	cmd := exec.Command("git", args...)
-	cmd.Dir = repoDir
-
-	if out, err := cmd.CombinedOutput(); err != nil {
-		return fmt.Errorf("git worktree remove failed: %w\n%s", err, out)
-	}
-
-	return nil
+	_, err := runGit(repoDir, args...)
+	return err
 }
 
 // BranchExists checks if a branch exists
 func BranchExists(repoDir, branch string) bool {
-	cmd := exec.Command("git", "show-ref", "--verify", "--quiet", "refs/heads/"+branch)
-	cmd.Dir = repoDir
-	return cmd.Run() == nil
+	return runGitSilent(repoDir, "show-ref", "--verify", "--quiet", "refs/heads/"+branch)
 }
 
 // DeleteBranch deletes a local branch
@@ -119,39 +123,20 @@ func DeleteBranch(repoDir, branch string, force bool) error {
 	if force {
 		flag = "-D"
 	}
-
-	cmd := exec.Command("git", "branch", flag, branch)
-	cmd.Dir = repoDir
-
-	if out, err := cmd.CombinedOutput(); err != nil {
-		return fmt.Errorf("git branch delete failed: %w\n%s", err, out)
-	}
-
-	return nil
+	_, err := runGit(repoDir, "branch", flag, branch)
+	return err
 }
 
 // GetRepoRoot returns the root directory of the git repository
 func GetRepoRoot(dir string) (string, error) {
-	cmd := exec.Command("git", "rev-parse", "--show-toplevel")
-	cmd.Dir = dir
-
-	out, err := cmd.Output()
+	out, err := runGitOutput(dir, "rev-parse", "--show-toplevel")
 	if err != nil {
 		return "", fmt.Errorf("not a git repository: %w", err)
 	}
-
-	return strings.TrimSpace(string(out)), nil
+	return out, nil
 }
 
 // GetCurrentBranch returns the current branch name
 func GetCurrentBranch(dir string) (string, error) {
-	cmd := exec.Command("git", "branch", "--show-current")
-	cmd.Dir = dir
-
-	out, err := cmd.Output()
-	if err != nil {
-		return "", fmt.Errorf("failed to get current branch: %w", err)
-	}
-
-	return strings.TrimSpace(string(out)), nil
+	return runGitOutput(dir, "branch", "--show-current")
 }

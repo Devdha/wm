@@ -16,17 +16,17 @@ func TestListRemoteBranches(t *testing.T) {
 	defer os.RemoveAll(tmpDir)
 
 	// Initialize git repo with main branch
-	runGit(t, tmpDir, "init", "-b", "main")
-	runGit(t, tmpDir, "config", "user.name", "Test User")
-	runGit(t, tmpDir, "config", "user.email", "test@example.com")
+	testRunGit(t, tmpDir, "init", "-b", "main")
+	testRunGit(t, tmpDir, "config", "user.name", "Test User")
+	testRunGit(t, tmpDir, "config", "user.email", "test@example.com")
 
 	// Create initial commit
 	testFile := filepath.Join(tmpDir, "README.md")
 	if err := os.WriteFile(testFile, []byte("# Test"), 0644); err != nil {
 		t.Fatalf("Failed to write test file: %v", err)
 	}
-	runGit(t, tmpDir, "add", "README.md")
-	runGit(t, tmpDir, "commit", "-m", "Initial commit")
+	testRunGit(t, tmpDir, "add", "README.md")
+	testRunGit(t, tmpDir, "commit", "-m", "Initial commit")
 
 	// Create a bare remote repository
 	remoteDir, err := os.MkdirTemp("", "wm-branch-test-remote-*")
@@ -35,24 +35,24 @@ func TestListRemoteBranches(t *testing.T) {
 	}
 	defer os.RemoveAll(remoteDir)
 
-	runGit(t, remoteDir, "init", "--bare")
+	testRunGit(t, remoteDir, "init", "--bare")
 
 	// Add remote and push
-	runGit(t, tmpDir, "remote", "add", "origin", remoteDir)
-	runGit(t, tmpDir, "push", "-u", "origin", "main")
+	testRunGit(t, tmpDir, "remote", "add", "origin", remoteDir)
+	testRunGit(t, tmpDir, "push", "-u", "origin", "main")
 
 	// Create and push a feature branch
-	runGit(t, tmpDir, "checkout", "-b", "feature/test")
+	testRunGit(t, tmpDir, "checkout", "-b", "feature/test")
 	testFile2 := filepath.Join(tmpDir, "test.txt")
 	if err := os.WriteFile(testFile2, []byte("test"), 0644); err != nil {
 		t.Fatalf("Failed to write test file: %v", err)
 	}
-	runGit(t, tmpDir, "add", "test.txt")
-	runGit(t, tmpDir, "commit", "-m", "Add test file")
-	runGit(t, tmpDir, "push", "-u", "origin", "feature/test")
+	testRunGit(t, tmpDir, "add", "test.txt")
+	testRunGit(t, tmpDir, "commit", "-m", "Add test file")
+	testRunGit(t, tmpDir, "push", "-u", "origin", "feature/test")
 
 	// Go back to main
-	runGit(t, tmpDir, "checkout", "main")
+	testRunGit(t, tmpDir, "checkout", "main")
 
 	// Test ListRemoteBranches
 	branches, err := ListRemoteBranches(tmpDir)
@@ -91,17 +91,17 @@ func TestRemoteBranchExists(t *testing.T) {
 	defer os.RemoveAll(tmpDir)
 
 	// Initialize git repo with main branch
-	runGit(t, tmpDir, "init", "-b", "main")
-	runGit(t, tmpDir, "config", "user.name", "Test User")
-	runGit(t, tmpDir, "config", "user.email", "test@example.com")
+	testRunGit(t, tmpDir, "init", "-b", "main")
+	testRunGit(t, tmpDir, "config", "user.name", "Test User")
+	testRunGit(t, tmpDir, "config", "user.email", "test@example.com")
 
 	// Create initial commit
 	testFile := filepath.Join(tmpDir, "README.md")
 	if err := os.WriteFile(testFile, []byte("# Test"), 0644); err != nil {
 		t.Fatalf("Failed to write test file: %v", err)
 	}
-	runGit(t, tmpDir, "add", "README.md")
-	runGit(t, tmpDir, "commit", "-m", "Initial commit")
+	testRunGit(t, tmpDir, "add", "README.md")
+	testRunGit(t, tmpDir, "commit", "-m", "Initial commit")
 
 	// Create a bare remote repository
 	remoteDir, err := os.MkdirTemp("", "wm-branch-test-remote-*")
@@ -110,11 +110,11 @@ func TestRemoteBranchExists(t *testing.T) {
 	}
 	defer os.RemoveAll(remoteDir)
 
-	runGit(t, remoteDir, "init", "--bare")
+	testRunGit(t, remoteDir, "init", "--bare")
 
 	// Add remote and push
-	runGit(t, tmpDir, "remote", "add", "origin", remoteDir)
-	runGit(t, tmpDir, "push", "-u", "origin", "main")
+	testRunGit(t, tmpDir, "remote", "add", "origin", remoteDir)
+	testRunGit(t, tmpDir, "push", "-u", "origin", "main")
 
 	// Test existing branch
 	if !RemoteBranchExists(tmpDir, "main") {
@@ -136,17 +136,17 @@ func TestFetchBranch(t *testing.T) {
 	defer os.RemoveAll(tmpDir)
 
 	// Initialize git repo with main branch
-	runGit(t, tmpDir, "init", "-b", "main")
-	runGit(t, tmpDir, "config", "user.name", "Test User")
-	runGit(t, tmpDir, "config", "user.email", "test@example.com")
+	testRunGit(t, tmpDir, "init", "-b", "main")
+	testRunGit(t, tmpDir, "config", "user.name", "Test User")
+	testRunGit(t, tmpDir, "config", "user.email", "test@example.com")
 
 	// Create initial commit
 	testFile := filepath.Join(tmpDir, "README.md")
 	if err := os.WriteFile(testFile, []byte("# Test"), 0644); err != nil {
 		t.Fatalf("Failed to write test file: %v", err)
 	}
-	runGit(t, tmpDir, "add", "README.md")
-	runGit(t, tmpDir, "commit", "-m", "Initial commit")
+	testRunGit(t, tmpDir, "add", "README.md")
+	testRunGit(t, tmpDir, "commit", "-m", "Initial commit")
 
 	// Create a bare remote repository
 	remoteDir, err := os.MkdirTemp("", "wm-branch-test-remote-*")
@@ -155,25 +155,25 @@ func TestFetchBranch(t *testing.T) {
 	}
 	defer os.RemoveAll(remoteDir)
 
-	runGit(t, remoteDir, "init", "--bare")
+	testRunGit(t, remoteDir, "init", "--bare")
 
 	// Add remote and push
-	runGit(t, tmpDir, "remote", "add", "origin", remoteDir)
-	runGit(t, tmpDir, "push", "-u", "origin", "main")
+	testRunGit(t, tmpDir, "remote", "add", "origin", remoteDir)
+	testRunGit(t, tmpDir, "push", "-u", "origin", "main")
 
 	// Create a feature branch on remote only
-	runGit(t, tmpDir, "checkout", "-b", "feature/remote")
+	testRunGit(t, tmpDir, "checkout", "-b", "feature/remote")
 	testFile2 := filepath.Join(tmpDir, "test.txt")
 	if err := os.WriteFile(testFile2, []byte("test"), 0644); err != nil {
 		t.Fatalf("Failed to write test file: %v", err)
 	}
-	runGit(t, tmpDir, "add", "test.txt")
-	runGit(t, tmpDir, "commit", "-m", "Add test file")
-	runGit(t, tmpDir, "push", "-u", "origin", "feature/remote")
+	testRunGit(t, tmpDir, "add", "test.txt")
+	testRunGit(t, tmpDir, "commit", "-m", "Add test file")
+	testRunGit(t, tmpDir, "push", "-u", "origin", "feature/remote")
 
 	// Go back to main and delete local feature branch
-	runGit(t, tmpDir, "checkout", "main")
-	runGit(t, tmpDir, "branch", "-D", "feature/remote")
+	testRunGit(t, tmpDir, "checkout", "main")
+	testRunGit(t, tmpDir, "branch", "-D", "feature/remote")
 
 	// Test FetchBranch
 	if err := FetchBranch(tmpDir, "feature/remote"); err != nil {
@@ -188,7 +188,7 @@ func TestFetchBranch(t *testing.T) {
 	}
 }
 
-func runGit(t *testing.T, dir string, args ...string) {
+func testRunGit(t *testing.T, dir string, args ...string) {
 	t.Helper()
 	cmd := exec.Command("git", args...)
 	cmd.Dir = dir
