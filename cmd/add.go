@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/Devdha/wm/internal/git"
@@ -10,7 +11,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var addPath string
+var (
+	addPath string
+	addYes  bool
+)
 
 var addCmd = &cobra.Command{
 	Use:   "add [branch]",
@@ -27,11 +31,25 @@ Examples:
 
 func init() {
 	addCmd.Flags().StringVarP(&addPath, "path", "p", "", "Custom path for the worktree")
+	addCmd.Flags().BoolVarP(&addYes, "yes", "y", false, "Auto-confirm prompts (useful for CI/CD)")
 	rootCmd.AddCommand(addCmd)
 }
 
+func isInteractive() bool {
+	fi, err := os.Stdin.Stat()
+	if err != nil {
+		return false
+	}
+	return fi.Mode()&os.ModeCharDevice != 0
+}
+
 func runAdd(cmd *cobra.Command, args []string) error {
-	ws, err := workspace.Open(ui.NewConsole())
+	var prompter ui.Prompter = ui.NewConsole()
+	if addYes || !isInteractive() {
+		prompter = ui.NewSilent(true)
+	}
+
+	ws, err := workspace.Open(prompter)
 	if err != nil {
 		return err
 	}
@@ -39,8 +57,10 @@ func runAdd(cmd *cobra.Command, args []string) error {
 	var branch string
 	var customPath string
 
-	// Interactive mode if no branch provided
 	if len(args) == 0 {
+		if !isInteractive() {
+			return fmt.Errorf("branch name required in non-interactive mode")
+		}
 		branch, customPath, err = runAddInteractive(ws)
 		if err != nil {
 			return err
@@ -49,7 +69,6 @@ func runAdd(cmd *cobra.Command, args []string) error {
 		branch = args[0]
 		customPath = addPath
 
-		// Check if branch exists on origin but not locally
 		if !git.BranchExists(ws.Root, branch) && git.RemoteBranchExists(ws.Root, branch) {
 			if err := handleRemoteBranch(ws, branch); err != nil {
 				return err
@@ -57,7 +76,50 @@ func runAdd(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	return ws.AddWorktree(branch, customPath)
+	result, err := ws.AddWorktree(branch, customPath)
+	if err != nil {
+		return err
+	}
+
+	printAddResult(result)
+
+	return nil
+}
+
+func printAddResult(result *workspace.AddResult) {
+	fmt.Println()
+	ui.PrintStep(ui.IconBolt, "Creating worktree...")
+	ui.PrintSubStep(fmt.Sprintf("Branch: %s", result.Branch))
+	ui.PrintSubStepEnd(fmt.Sprintf("Path: %s", result.Path))
+	fmt.Println()
+
+	if len(result.SyncedFiles) > 0 {
+		ui.PrintStep(ui.IconPackage, "Syncing files...")
+		for _, file := range result.SyncedFiles {
+			ui.PrintSubStep(fmt.Sprintf("%s %s", file, ui.Success.Sprint(ui.IconCheck)))
+		}
+		fmt.Println()
+	}
+
+	if len(result.PostInstall) > 0 {
+		ui.PrintStep(ui.IconRocket, "Running post-install...")
+		for _, c := range result.PostInstall {
+			suffix := ""
+			if result.IsBackground {
+				suffix = " " + ui.Muted.Sprint("(background)")
+			}
+			ui.PrintSubStep(c + suffix)
+		}
+		fmt.Println()
+	}
+
+	fmt.Println()
+	ui.Success.Print(ui.IconCheck + " ")
+	ui.Bold.Print("Worktree ready: ")
+	fmt.Println(result.Path)
+	fmt.Println()
+	ui.Muted.Printf("  cd %s\n", result.Path)
+	fmt.Println()
 }
 
 func runAddInteractive(ws *workspace.Workspace) (string, string, error) {

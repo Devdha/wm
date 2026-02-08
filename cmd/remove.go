@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/Devdha/wm/internal/ui"
 	"github.com/Devdha/wm/internal/workspace"
 	"github.com/spf13/cobra"
@@ -43,23 +45,59 @@ func runRemove(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	var path string
+	var deleteBranch bool
+
 	// Interactive mode if no path provided
 	if len(args) == 0 {
-		return runRemoveInteractive(ws)
+		path, deleteBranch, err = runRemoveInteractive(ws)
+		if err != nil {
+			return err
+		}
+	} else {
+		path = args[0]
+		deleteBranch = removeDeleteBranch
 	}
 
-	return ws.RemoveWorktree(args[0], removeDeleteBranch, removeForce)
+	// Show removal spinner
+	fmt.Println()
+	spinner := ui.NewSpinner("Removing worktree...")
+	spinner.Start()
+
+	result, err := ws.RemoveWorktree(path, deleteBranch, removeForce)
+	if err != nil {
+		spinner.Fail("Failed to remove worktree")
+		return err
+	}
+
+	spinner.Success(fmt.Sprintf("Removed worktree: %s", result.Path))
+
+	// Handle branch deletion
+	if deleteBranch && result.Branch != "" {
+		branchSpinner := ui.NewSpinner(fmt.Sprintf("Deleting branch '%s'...", result.Branch))
+		branchSpinner.Start()
+
+		if result.BranchDeleted {
+			branchSpinner.Success(fmt.Sprintf("Deleted branch: %s", result.Branch))
+		} else {
+			branchSpinner.Fail(fmt.Sprintf("Failed to delete branch '%s'", result.Branch))
+			ui.Muted.Println("  Tip: Use 'git branch -D' to force delete.")
+		}
+	}
+
+	fmt.Println()
+	return nil
 }
 
-func runRemoveInteractive(ws *workspace.Workspace) error {
+func runRemoveInteractive(ws *workspace.Workspace) (string, bool, error) {
 	worktrees, err := ws.ListWorktrees()
 	if err != nil {
-		return err
+		return "", false, err
 	}
 
 	if len(worktrees) <= 1 {
 		ui.PrintWarning("No additional worktrees to remove.")
-		return nil
+		return "", false, fmt.Errorf("no worktrees to remove")
 	}
 
 	// Build options
@@ -85,7 +123,7 @@ func runRemoveInteractive(ws *workspace.Workspace) error {
 
 	selectedPath, err := ui.Select("Select worktree to remove:", options)
 	if err != nil {
-		return err
+		return "", false, err
 	}
 
 	// Ask if branch should be deleted
@@ -94,5 +132,5 @@ func runRemoveInteractive(ws *workspace.Workspace) error {
 		deleteBranch = ui.NewConsole().Confirm("Also delete branch?")
 	}
 
-	return ws.RemoveWorktree(selectedPath, deleteBranch, removeForce)
+	return selectedPath, deleteBranch, nil
 }
