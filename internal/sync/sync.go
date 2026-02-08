@@ -5,14 +5,37 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/Devdha/wm/internal/config"
 )
+
+func validatePathBoundary(path, boundary string) error {
+	absPath, err := filepath.Abs(path)
+	if err != nil {
+		return fmt.Errorf("failed to resolve path: %w", err)
+	}
+	absBoundary, err := filepath.Abs(boundary)
+	if err != nil {
+		return fmt.Errorf("failed to resolve boundary: %w", err)
+	}
+	if !strings.HasPrefix(absPath, absBoundary+string(filepath.Separator)) && absPath != absBoundary {
+		return fmt.Errorf("path '%s' is outside boundary '%s'", absPath, absBoundary)
+	}
+	return nil
+}
 
 // SyncFile syncs a single file from srcDir to dstDir based on SyncItem config
 func SyncFile(srcDir, dstDir string, item config.SyncItem) error {
 	srcPath := filepath.Join(srcDir, item.Src)
 	dstPath := filepath.Join(dstDir, item.Dst)
+
+	if err := validatePathBoundary(srcPath, srcDir); err != nil {
+		return fmt.Errorf("sync source path escapes repository: %w", err)
+	}
+	if err := validatePathBoundary(dstPath, dstDir); err != nil {
+		return fmt.Errorf("sync destination path escapes worktree: %w", err)
+	}
 
 	// Check if source exists
 	if _, err := os.Stat(srcPath); os.IsNotExist(err) {
