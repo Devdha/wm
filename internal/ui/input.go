@@ -159,7 +159,7 @@ func InputWithOptions(title, placeholder string, options []SelectOption) (string
 	l := list.New(items, delegate, 50, 10)
 	l.Title = ""
 	l.SetShowStatusBar(false)
-	l.SetFilteringEnabled(false)
+	l.SetFilteringEnabled(true)
 	l.SetShowHelp(false)
 	l.SetShowTitle(false)
 	l.Styles.Title = lipgloss.NewStyle()
