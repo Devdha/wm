@@ -140,3 +140,46 @@ func GetRepoRoot(dir string) (string, error) {
 func GetCurrentBranch(dir string) (string, error) {
 	return runGitOutput(dir, "branch", "--show-current")
 }
+
+// WorktreeStatus returns the status summary for a worktree path
+func WorktreeStatus(dir string) (modified int, untracked int, err error) {
+	out, err := runGitOutput(dir, "status", "--porcelain")
+	if err != nil {
+		return 0, 0, err
+	}
+
+	if out == "" {
+		return 0, 0, nil
+	}
+
+	lines := strings.Split(out, "\n")
+	for _, line := range lines {
+		if len(line) < 2 {
+			continue
+		}
+		xy := line[:2]
+		if xy[0] == '?' && xy[1] == '?' {
+			untracked++
+		} else {
+			modified++
+		}
+	}
+
+	return modified, untracked, nil
+}
+
+// WorktreeAheadBehind returns ahead/behind counts relative to remote
+func WorktreeAheadBehind(dir string) (ahead int, behind int, err error) {
+	out, err := runGitOutput(dir, "rev-list", "--left-right", "--count", "HEAD...@{upstream}")
+	if err != nil {
+		return 0, 0, nil
+	}
+
+	var a, b int
+	_, err = fmt.Sscanf(out, "%d\t%d", &a, &b)
+	if err != nil {
+		return 0, 0, nil
+	}
+
+	return a, b, nil
+}
