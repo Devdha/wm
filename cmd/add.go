@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"strings"
 
@@ -87,7 +88,7 @@ func runAdd(cmd *cobra.Command, args []string) error {
 
 	if isInteractive() {
 		if prompter.ConfirmYes("Navigate to worktree directory?") {
-			return openShellAt(result.Path)
+			return openShellAt(result.Path, result.Branch)
 		}
 	}
 
@@ -206,16 +207,50 @@ func detectShell() string {
 	return "/bin/sh"
 }
 
-func openShellAt(dir string) error {
+func openShellAt(dir, branch string) error {
 	shell := detectShell()
+	shellName := filepath.Base(shell)
 
 	fmt.Println()
 	ui.Muted.Printf("  Starting shell in %s\n", dir)
 	ui.Muted.Println("  Type 'exit' to return to the previous directory.")
 	fmt.Println()
 
-	cmd := exec.Command(shell)
+	promptPrefix := fmt.Sprintf("(wm:%s) ", branch)
+	env := append(os.Environ(), "WM_WORKTREE="+branch)
+
+	var cmd *exec.Cmd
+	switch shellName {
+	case "zsh":
+		tmpDir, err := os.MkdirTemp("", "wm-zsh-*")
+		if err != nil {
+			break
+		}
+		rc := fmt.Sprintf("if [[ -f \"$WM_ORIG_ZDOTDIR/.zshrc\" ]]; then ZDOTDIR=\"$WM_ORIG_ZDOTDIR\" source \"$WM_ORIG_ZDOTDIR/.zshrc\"; elif [[ -f \"$HOME/.zshrc\" ]]; then source \"$HOME/.zshrc\"; fi\nPROMPT=\"%s$PROMPT\"\n", promptPrefix)
+		os.WriteFile(filepath.Join(tmpDir, ".zshrc"), []byte(rc), 0644)
+		origZdotdir := os.Getenv("ZDOTDIR")
+		if origZdotdir == "" {
+			origZdotdir = os.Getenv("HOME")
+		}
+		env = append(env, "ZDOTDIR="+tmpDir, "WM_ORIG_ZDOTDIR="+origZdotdir)
+		cmd = exec.Command(shell)
+	case "bash":
+		tmpFile, err := os.CreateTemp("", "wm-bashrc-*")
+		if err != nil {
+			break
+		}
+		rc := fmt.Sprintf("if [[ -f \"$HOME/.bashrc\" ]]; then source \"$HOME/.bashrc\"; fi\nPS1=\"%s$PS1\"\n", promptPrefix)
+		tmpFile.WriteString(rc)
+		tmpFile.Close()
+		cmd = exec.Command(shell, "--rcfile", tmpFile.Name())
+	}
+
+	if cmd == nil {
+		cmd = exec.Command(shell)
+	}
+
 	cmd.Dir = dir
+	cmd.Env = env
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
