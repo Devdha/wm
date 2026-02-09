@@ -3,6 +3,8 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"os/exec"
+	"runtime"
 	"strings"
 
 	"github.com/Devdha/wm/internal/git"
@@ -83,6 +85,12 @@ func runAdd(cmd *cobra.Command, args []string) error {
 
 	printAddResult(result)
 
+	if isInteractive() || addYes {
+		if prompter.ConfirmYes("Navigate to worktree directory?") {
+			return openShellAt(result.Path)
+		}
+	}
+
 	return nil
 }
 
@@ -117,8 +125,6 @@ func printAddResult(result *workspace.AddResult) {
 	ui.Success.Print(ui.IconCheck + " ")
 	ui.Bold.Print("Worktree ready: ")
 	fmt.Println(result.Path)
-	fmt.Println()
-	ui.Muted.Printf("  cd %s\n", result.Path)
 	fmt.Println()
 }
 
@@ -185,6 +191,35 @@ func runAddInteractive(ws *workspace.Workspace) (string, string, error) {
 	}
 
 	return branch, customPath, nil
+}
+
+func detectShell() string {
+	if shell := os.Getenv("SHELL"); shell != "" {
+		return shell
+	}
+	if runtime.GOOS == "windows" {
+		if comspec := os.Getenv("COMSPEC"); comspec != "" {
+			return comspec
+		}
+		return "cmd.exe"
+	}
+	return "/bin/sh"
+}
+
+func openShellAt(dir string) error {
+	shell := detectShell()
+
+	fmt.Println()
+	ui.Muted.Printf("  Starting shell in %s\n", dir)
+	ui.Muted.Println("  Type 'exit' to return to the previous directory.")
+	fmt.Println()
+
+	cmd := exec.Command(shell)
+	cmd.Dir = dir
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
 }
 
 func handleRemoteBranch(ws *workspace.Workspace, branch string) error {

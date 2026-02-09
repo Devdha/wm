@@ -10,6 +10,7 @@ import (
 // Prompter handles user interaction
 type Prompter interface {
 	Confirm(message string) bool
+	ConfirmYes(message string) bool
 	Input(prompt, defaultValue string) string
 	Print(message string)
 	Printf(format string, args ...interface{})
@@ -32,6 +33,15 @@ func (c *Console) Confirm(message string) bool {
 	answer, _ := c.reader.ReadString('\n')
 	answer = strings.TrimSpace(strings.ToLower(answer))
 	return answer == "y" || answer == "yes"
+}
+
+func (c *Console) ConfirmYes(message string) bool {
+	Accent.Print("? ")
+	fmt.Print(message + " ")
+	Muted.Print("[Y/n]: ")
+	answer, _ := c.reader.ReadString('\n')
+	answer = strings.TrimSpace(strings.ToLower(answer))
+	return answer != "n" && answer != "no"
 }
 
 func (c *Console) Input(prompt, defaultValue string) string {
@@ -69,6 +79,10 @@ func NewSilent(autoConfirm bool) *Silent {
 }
 
 func (s *Silent) Confirm(message string) bool {
+	return s.autoConfirm
+}
+
+func (s *Silent) ConfirmYes(message string) bool {
 	return s.autoConfirm
 }
 
