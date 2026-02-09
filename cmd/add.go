@@ -85,7 +85,7 @@ func runAdd(cmd *cobra.Command, args []string) error {
 
 	printAddResult(result)
 
-	if isInteractive() || addYes {
+	if isInteractive() {
 		if prompter.ConfirmYes("Navigate to worktree directory?") {
 			return openShellAt(result.Path)
 		}
