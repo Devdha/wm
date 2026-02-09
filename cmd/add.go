@@ -226,7 +226,10 @@ func openShellAt(dir, branch string) error {
 		if err != nil {
 			break
 		}
-		rc := fmt.Sprintf("if [[ -f \"$WM_ORIG_ZDOTDIR/.zshrc\" ]]; then ZDOTDIR=\"$WM_ORIG_ZDOTDIR\" source \"$WM_ORIG_ZDOTDIR/.zshrc\"; elif [[ -f \"$HOME/.zshrc\" ]]; then source \"$HOME/.zshrc\"; fi\nPROMPT=\"%s$PROMPT\"\n", promptPrefix)
+		rc := fmt.Sprintf(`if [[ -f "$WM_ORIG_ZDOTDIR/.zshrc" ]]; then ZDOTDIR="$WM_ORIG_ZDOTDIR" source "$WM_ORIG_ZDOTDIR/.zshrc"; elif [[ -f "$HOME/.zshrc" ]]; then source "$HOME/.zshrc"; fi
+__wm_prompt_hook() { PROMPT="%s${PROMPT#\(wm:*\) }" }
+precmd_functions+=(__wm_prompt_hook)
+`, promptPrefix)
 		os.WriteFile(filepath.Join(tmpDir, ".zshrc"), []byte(rc), 0644)
 		origZdotdir := os.Getenv("ZDOTDIR")
 		if origZdotdir == "" {
@@ -239,7 +242,10 @@ func openShellAt(dir, branch string) error {
 		if err != nil {
 			break
 		}
-		rc := fmt.Sprintf("if [[ -f \"$HOME/.bashrc\" ]]; then source \"$HOME/.bashrc\"; fi\nPS1=\"%s$PS1\"\n", promptPrefix)
+		rc := fmt.Sprintf(`if [[ -f "$HOME/.bashrc" ]]; then source "$HOME/.bashrc"; fi
+__wm_prompt_hook() { PS1="%s${PS1#\(wm:*\) }"; }
+PROMPT_COMMAND="__wm_prompt_hook;${PROMPT_COMMAND}"
+`, promptPrefix)
 		tmpFile.WriteString(rc)
 		tmpFile.Close()
 		cmd = exec.Command(shell, "--rcfile", tmpFile.Name())

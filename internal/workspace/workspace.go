@@ -86,7 +86,7 @@ func (w *Workspace) AddWorktree(branch string, customPath string) (*AddResult, e
 
 	if createBranch {
 		msg := fmt.Sprintf("Branch '%s' does not exist. Create it?", branch)
-		if !w.UI.Confirm(msg) {
+		if !w.UI.ConfirmYes(msg) {
 			return nil, fmt.Errorf("user canceled")
 		}
 	}
