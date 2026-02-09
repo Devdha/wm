@@ -229,9 +229,10 @@ func (w *Workspace) findWorktree(worktrees []git.Worktree, path string) *git.Wor
 
 	for i, wt := range worktrees {
 		wtResolved := resolvePath(wt.Path)
+		sep := string(filepath.Separator)
 		if wtResolved == absPath || wt.Path == path ||
-			strings.HasSuffix(wt.Path, "/"+path) ||
-			strings.HasSuffix(wt.Path, "/"+sanitizedPath) {
+			strings.HasSuffix(wt.Path, sep+path) ||
+			strings.HasSuffix(wt.Path, sep+sanitizedPath) {
 			return &worktrees[i]
 		}
 	}

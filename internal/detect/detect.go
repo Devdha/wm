@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 )
 
@@ -104,7 +105,7 @@ func Detect(dir string) DetectionResult {
 	if fileExists(filepath.Join(dir, "pyproject.toml")) {
 		installCmd := "pip install -e ."
 		if venv := detectVenv(dir); venv != "" {
-			installCmd = "source " + venv + "/bin/activate && " + installCmd
+			installCmd = venvActivateCmd(venv) + " && " + installCmd
 		}
 		return DetectionResult{
 			PackageManager: "pip",
@@ -117,7 +118,7 @@ func Detect(dir string) DetectionResult {
 	if fileExists(filepath.Join(dir, "requirements.txt")) {
 		installCmd := "pip install -r requirements.txt"
 		if venv := detectVenv(dir); venv != "" {
-			installCmd = "source " + venv + "/bin/activate && " + installCmd
+			installCmd = venvActivateCmd(venv) + " && " + installCmd
 		}
 		return DetectionResult{
 			PackageManager: "pip",
@@ -158,6 +159,13 @@ func isCargoWorkspace(dir string) bool {
 	}
 
 	return strings.Contains(string(data), "[workspace]")
+}
+
+func venvActivateCmd(venv string) string {
+	if runtime.GOOS == "windows" {
+		return venv + `\Scripts\activate`
+	}
+	return "source " + venv + "/bin/activate"
 }
 
 func detectVenv(dir string) string {

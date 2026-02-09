@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/Devdha/wm/internal/config"
@@ -99,6 +100,10 @@ func createSymlink(src, dst string) error {
 	}
 
 	if err := os.Symlink(absSrc, dst); err != nil {
+		// Fallback to copy if symlink fails (e.g. Windows without admin privileges)
+		if runtime.GOOS == "windows" {
+			return copyFile(src, dst)
+		}
 		return fmt.Errorf("failed to create symlink: %w", err)
 	}
 
